@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DecisionDice — Make Smarter Choices</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F4EF;--ink:#1A1814;--ink-light:#6B6560;--ink-muted:#9B958F;
+  --accent:#C8873A;--accent-dark:#A86A20;--accent-light:#F0DCC3;--accent-xlight:#FBF4EC;
+  --white:#FFFFFF;--border:#DDD9D2;--border-light:#EAE6E0;
+  --green:#2D7A4F;--green-light:#D4EDDF;--red:#C0392B;--red-light:#FDECEA;
+  --blue:#2563EB;--blue-light:#DBEAFE;
+  --shadow-sm:0 1px 3px rgba(26,24,20,.07);
+  --shadow-md:0 4px 16px rgba(26,24,20,.10);
+  --shadow-lg:0 12px 40px rgba(26,24,20,.14);
+  --radius:5px;--radius-lg:10px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Karla',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════ */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 56px;height:68px;
+  border-bottom:1px solid var(--border);
+  background:rgba(247,244,239,.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:200;
+}
+.logo{display:flex;align-items:center;gap:11px;font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);text-decoration:none;letter-spacing:-.01em}
+.logo-dice{width:34px;height:34px;background:var(--ink);border-radius:7px;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;padding:6px;gap:3px}
+.dot{background:var(--accent);border-radius:50%}
+.dot.h{background:transparent}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-link{color:var(--ink-light);text-decoration:none;font-size:14px;font-weight:500;letter-spacing:.02em;padding:8px 14px;border-radius:var(--radius);transition:color .2s,background .2s}
+.nav-link:hover{color:var(--ink);background:var(--accent-xlight)}
+.nav-link.active{color:var(--accent)}
+.nav-divider{width:1px;height:20px;background:var(--border);margin:0 6px}
+.nav-hist-btn{display:flex;align-items:center;gap:6px;background:var(--white);border:1px solid var(--border);color:var(--ink);padding:8px 16px;border-radius:var(--radius);font-family:'Karla',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;position:relative}
+.nav-hist-btn:hover{border-color:var(--accent);color:var(--accent)}
+.hist-count{background:var(--accent);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:100px;min-width:18px;text-align:center;line-height:1.4}
+.nav-cta{background:var(--ink);color:white;padding:9px 20px;border-radius:var(--radius);font-family:'Karla',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:.2s;letter-spacing:.02em}
+.nav-cta:hover{background:var(--accent)}
+
+/* ═══════════════════════════════════════════
+   PAGE SYSTEM
+═══════════════════════════════════════════ */
+.page{display:none}
+.page.active{display:block}
+
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+.hero{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 68px);align-items:center}
+.hero-left{padding:80px 48px 80px 72px;display:flex;flex-direction:column;gap:30px}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:7px 16px;border-radius:100px;width:fit-content}
+.hero-tag .pulse{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pulseDot 2s ease infinite}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+h1{font-family:'DM Serif Display',serif;font-size:clamp(44px,5.2vw,68px);line-height:1.05;color:var(--ink);letter-spacing:-.02em}
+h1 em{font-style:italic;color:var(--accent)}
+.hero-sub{font-size:17px;color:var(--ink-light);line-height:1.75;max-width:450px;font-weight:300}
+.hero-btns{display:flex;gap:14px;align-items:center}
+.btn-primary{background:var(--ink);color:white;border:none;padding:14px 28px;border-radius:var(--radius);font-family:'Karla',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.01em}
+.btn-primary:hover{background:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-ghost{background:transparent;color:var(--ink-light);border:1px solid var(--border);padding:14px 28px;border-radius:var(--radius);font-family:'Karla',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:.2s}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.hero-stats{display:flex;gap:36px;padding-top:20px;border-top:1px solid var(--border)}
+.stat-num{font-family:'DM Serif Display',serif;font-size:30px;color:var(--ink);line-height:1}
+.stat-label{font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+
+/* HERO RIGHT */
+.hero-right{background:var(--ink);height:100%;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:calc(100vh - 68px)}
+.hero-bg-pattern{position:absolute;inset:0;background-image:radial-gradient(circle at 70% 30%, rgba(200,135,58,.12) 0%, transparent 60%),repeating-linear-gradient(45deg,rgba(255,255,255,.015) 0,rgba(255,255,255,.015) 1px,transparent 0,transparent 50%);background-size:100% 100%,24px 24px}
+.hero-visual{display:flex;flex-direction:column;gap:14px;padding:56px 44px;width:100%;max-width:420px;position:relative;z-index:1}
+.fw-preview-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:17px 20px;cursor:pointer;transition:.25s;animation:slideUp .7s ease both}
+.fw-preview-card:nth-child(1){animation-delay:.05s}
+.fw-preview-card:nth-child(2){animation-delay:.15s}
+.fw-preview-card:nth-child(3){animation-delay:.25s}
+.fw-preview-card:nth-child(4){animation-delay:.35s}
+.fw-preview-card.active,.fw-preview-card:hover{background:rgba(200,135,58,.13);border-color:rgba(200,135,58,.5)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fpc-row{display:flex;align-items:center;gap:12px;margin-bottom:5px}
+.fpc-icon{width:32px;height:32px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.fpc-name{font-family:'DM Serif Display',serif;font-size:16px;color:white}
+.fpc-desc{font-size:11px;color:rgba(255,255,255,.45);line-height:1.5;padding-left:44px}
+
+/* ═══════════════════════════════════════════
+   SECTION HEADERS
+═══════════════════════════════════════════ */
+.section-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+h2{font-family:'DM Serif Display',serif;font-size:clamp(30px,3.5vw,46px);line-height:1.12;letter-spacing:-.01em}
+.section-sub{font-size:16px;color:var(--ink-light);line-height:1.75;max-width:540px;font-weight:300;margin-top:12px}
+
+/* ═══════════════════════════════════════════
+   TOOL SECTION
+═══════════════════════════════════════════ */
+.tool-section{padding:96px 72px;max-width:1140px;margin:0 auto}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start;margin-top:52px}
+.tool-left{display:flex;flex-direction:column;gap:22px}
+
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-light);margin-bottom:8px}
+textarea,input[type=text],input[type=password],.ctx-input{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:'Karla',sans-serif;font-size:15px;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s}
+textarea{resize:none;height:118px;line-height:1.65}
+textarea:focus,input:focus,.ctx-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,135,58,.1)}
+textarea::placeholder,input::placeholder{color:#C8C2BB}
+
+/* FRAMEWORK PICKER */
+.framework-picker{display:flex;flex-direction:column;gap:9px}
+.fp-opt{display:flex;align-items:flex-start;gap:14px;padding:15px 16px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:.2s;background:var(--white)}
+.fp-opt:hover{border-color:var(--accent);background:var(--accent-xlight)}
+.fp-opt.selected{border-color:var(--accent);background:var(--accent-light)}
+.fp-radio{width:18px;height:18px;border:2px solid var(--border);border-radius:50%;flex-shrink:0;margin-top:3px;transition:.2s;display:flex;align-items:center;justify-content:center}
+.fp-opt.selected .fp-radio{border-color:var(--accent);background:var(--accent)}
+.fp-opt.selected .fp-radio::after{content:'';width:6px;height:6px;background:white;border-radius:50%}
+.fp-title{font-weight:700;font-size:14px;margin-bottom:2px}
+.fp-sub{font-size:12px;color:var(--ink-light);line-height:1.4}
+
+/* MANUAL INPUTS */
+.manual-box{background:var(--bg);border:1.5px solid var(--border-light);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:16px;transition:.3s}
+.manual-box-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)}
+.mini-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:6px}
+.mini-inp{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 13px;font-family:'Karla',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:.2s;height:40px}
+.mini-inp:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(200,135,58,.08)}
+.mini-inp::placeholder{color:#C8C2BB}
+.mini-ta{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 13px;font-family:'Karla',sans-serif;font-size:13px;color:var(--ink);outline:none;resize:none;height:68px;line-height:1.55;transition:.2s}
+.mini-ta:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(200,135,58,.08)}
+.mini-ta::placeholder{color:#C8C2BB}
+.item-row{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.item-row .mini-inp{flex:1}
+.rm-btn{background:transparent;border:none;color:var(--ink-muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;transition:color .2s;margin-top:0}
+.rm-btn:hover{color:var(--red)}
+.add-btn{width:100%;background:transparent;border:1.5px dashed var(--border);color:var(--ink-light);padding:8px;border-radius:var(--radius);font-family:'Karla',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.add-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-xlight)}
+.crit-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px}
+.crit-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.crit-header .mini-inp{flex:1}
+.crit-scores{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.score-inp{text-align:center;font-weight:700}
+
+/* AI TOGGLE */
+.ai-toggle-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .2s}
+.ai-toggle-card.ai-on{border-color:rgba(109,63,181,.3)}
+.ai-card-top{padding:16px 18px;display:flex;align-items:center;justify-content:space-between}
+.ai-label-wrap{display:flex;align-items:center;gap:12px}
+.ai-badge{background:linear-gradient(135deg,#6D3FB5,#A855F7);color:white;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:100px}
+.ai-label-text{font-size:14px;font-weight:700;color:var(--ink)}
+.ai-label-sub{font-size:12px;color:var(--ink-light);margin-top:1px}
+.toggle{position:relative;width:46px;height:26px;cursor:pointer;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.tog-slider{position:absolute;inset:0;background:var(--border);border-radius:13px;transition:.25s}
+.tog-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:white;border-radius:50%;transition:.25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle input:checked+.tog-slider{background:linear-gradient(135deg,#6D3FB5,#A855F7)}
+.toggle input:checked+.tog-slider::before{transform:translateX(20px)}
+.ai-provider-panel{border-top:1px solid rgba(109,63,181,.12);padding:16px 18px;background:linear-gradient(135deg,rgba(109,63,181,.03),rgba(168,85,247,.03))}
+.ai-provider-label{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#6D3FB5;margin-bottom:10px}
+.ai-provider-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.ai-provider-opt{border:1.5px solid var(--border);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;transition:.2s;background:var(--white)}
+.ai-provider-opt:hover{border-color:#A855F7;background:#FAF5FF}
+.ai-provider-opt.selected{border-color:#6D3FB5;background:#EDE6F9}
+.ai-prov-icon{width:44px;height:44px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center}.ai-prov-icon svg{width:32px;height:32px;display:block}.ai-prov-icon img{display:block}
+.ai-prov-name{font-size:12px;font-weight:700;color:var(--ink)}
+.ai-prov-sub{font-size:10px;color:var(--ink-muted);margin-top:1px}
+.ai-config-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.ai-field-group{display:flex;flex-direction:column;gap:5px}
+.ai-field-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light)}
+.ai-field-note{font-size:11px;color:var(--ink-muted);line-height:1.5;margin-top:3px}
+.ai-field-note a{color:#6D3FB5;text-decoration:none}
+.ai-field-note a:hover{text-decoration:underline}
+.ai-key-inp{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-family:'Karla',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:.2s;height:42px}
+.ai-key-inp:focus{border-color:#6D3FB5;box-shadow:0 0 0 3px rgba(109,63,181,.1)}
+.ai-key-inp::placeholder{color:#C8C2BB}
+.ai-model-select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-family:'Karla',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:.2s;height:42px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.ai-model-select:focus{border-color:#6D3FB5}
+.ai-mode-note{padding:10px 14px;background:rgba(109,63,181,.06);border-radius:6px;font-size:12px;color:#6D3FB5;display:none;align-items:center;gap:8px;line-height:1.5}
+.ai-mode-note.show{display:flex}
+
+/* ANALYSE BTN */
+.analyse-btn{width:100%;background:var(--ink);color:white;border:none;padding:17px;border-radius:var(--radius);font-family:'Karla',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:.02em;box-shadow:var(--shadow-sm)}
+.analyse-btn:hover:not(:disabled){background:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.analyse-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+/* ═══════════════════════════════════════════
+   RESULT PANEL
+═══════════════════════════════════════════ */
+.result-panel{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);min-height:480px;display:flex;flex-direction:column;box-shadow:var(--shadow-sm);position:sticky;top:88px}
+.result-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.result-title{font-family:'DM Serif Display',serif;font-size:19px}
+.result-badges{display:flex;align-items:center;gap:7px}
+.r-badge{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:100px}
+.r-fw-badge{color:var(--accent);background:var(--accent-light)}
+.r-mode-badge-manual{color:var(--green);background:var(--green-light)}
+.r-mode-badge-ai{color:#6D3FB5;background:#EDE6F9}
+.result-body{padding:22px;flex:1;overflow-y:auto;max-height:580px}
+.result-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:9px;flex-wrap:wrap}
+.r-act-btn{font-family:'Karla',sans-serif;font-size:12px;font-weight:700;padding:8px 16px;border-radius:var(--radius);cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;letter-spacing:.02em}
+.r-act-btn.copy-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--ink-light)}
+.r-act-btn.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.r-act-btn.pdf-btn{background:var(--ink);border:1.5px solid var(--ink);color:white}
+.r-act-btn.pdf-btn:hover{background:var(--accent);border-color:var(--accent)}
+.r-act-btn.save-btn{background:var(--green-light);border:1.5px solid var(--green-light);color:var(--green)}
+.r-act-btn.save-btn:hover{background:var(--green);color:white;border-color:var(--green)}
+.r-act-btn.clear-btn{background:transparent;border:none;color:var(--ink-muted);margin-left:auto}
+.r-act-btn.clear-btn:hover{color:var(--red)}
+
+/* PLACEHOLDER */
+.result-placeholder{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink-muted);padding:60px 20px;text-align:center}
+.ph-dice{font-size:52px;opacity:.25;animation:floatY 3s ease infinite}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.ph-text{font-size:14px;line-height:1.65;max-width:240px}
+.ph-steps{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.ph-step{font-size:12px;color:var(--ink-muted);display:flex;align-items:center;gap:8px}
+.ph-step::before{content:attr(data-n);width:22px;height:22px;background:var(--border-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* LOADER */
+.loader{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:60px;text-align:center}
+.spin-ring{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-msg{font-size:13px;color:var(--ink-muted);animation:pulse 1.8s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ═══════════════════════════════════════════
+   MANUAL RESULT RENDERING
+═══════════════════════════════════════════ */
+.res-section{margin-bottom:26px}
+.res-section:last-child{margin-bottom:0}
+.res-section-title{font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:12px;padding-bottom:7px;border-bottom:1.5px solid var(--border-light);color:var(--ink)}
+.pc-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pc-col{padding:14px;border-radius:8px}
+.pc-col.pros{background:var(--green-light)}
+.pc-col.cons{background:var(--red-light)}
+.pc-col-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.pc-col.pros .pc-col-title{color:var(--green)}
+.pc-col.cons .pc-col-title{color:var(--red)}
+.pc-list{list-style:none;padding:0}
+.pc-list li{font-size:13px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.07);display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.pc-list li:last-child{border:none}
+.pc-bullet{flex-shrink:0;font-size:15px;line-height:1.2}
+.pc-col.pros .pc-bullet{color:var(--green)}
+.pc-col.cons .pc-bullet{color:var(--red)}
+.score-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.score-tbl th{text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);border-bottom:2px solid var(--border)}
+.score-tbl td{padding:10px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.score-tbl tr:last-child td{border:none}
+.bar-wrap{display:flex;align-items:center;gap:8px}
+.bar-bg{flex:1;height:7px;background:var(--border-light);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .7s ease}
+.bar-num{font-weight:700;font-size:13px;color:var(--accent);width:24px;text-align:right}
+.tl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tl-card{padding:14px;border-radius:8px;border:1.5px solid var(--border-light);background:var(--bg)}
+.tl-period{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.tl-content{font-size:13px;color:var(--ink);line-height:1.6}
+.da-challenge{padding:9px 14px;background:var(--bg);border-left:3px solid var(--accent);margin-bottom:7px;border-radius:0 5px 5px 0;font-size:13px;line-height:1.5}
+.da-assumption{padding:9px 14px;background:var(--bg);border-left:3px solid var(--ink-muted);margin-bottom:7px;border-radius:0 5px 5px 0;font-size:13px;line-height:1.5}
+.verdict-box{background:var(--ink);color:white;border-radius:8px;padding:18px 20px;margin-top:20px;line-height:1.65}
+.verdict-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.verdict-text{font-size:14px;color:rgba(255,255,255,.9)}
+.balance-bar-wrap{margin-top:16px;background:var(--bg);border-radius:8px;padding:16px}
+.bal-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:10px}
+.bal-track{height:10px;background:var(--red-light);border-radius:5px;overflow:hidden}
+.bal-fill{height:100%;background:var(--green);border-radius:5px;transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+.bal-info{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.bal-lean{font-size:13px;font-weight:700;color:var(--ink)}
+.bal-score{font-size:12px;color:var(--ink-muted)}
+.empty-state{font-size:13px;color:var(--ink-muted);font-style:italic;padding:8px 0}
+
+/* AI RESULT */
+.ai-result{line-height:1.75;font-size:14px;color:var(--ink)}
+.ai-result h3{font-family:'DM Serif Display',serif;font-size:18px;margin:22px 0 10px;color:var(--ink);padding-bottom:6px;border-bottom:1.5px solid var(--border-light)}
+.ai-result h3:first-child{margin-top:0}
+.ai-result p{margin-bottom:10px}
+.ai-result ul,.ai-result ol{padding-left:22px;margin-bottom:12px}
+.ai-result li{margin-bottom:6px}
+.ai-result strong{font-weight:700}
+.ai-verdict{background:var(--ink);color:white;border-radius:8px;padding:18px 20px;margin-top:20px;line-height:1.65}
+.ai-verdict-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+
+/* ═══════════════════════════════════════════
+   FRAMEWORKS SECTION
+═══════════════════════════════════════════ */
+.frameworks-section{padding:96px 72px;border-top:1px solid var(--border)}
+.frameworks-inner{max-width:1140px;margin:0 auto}
+.fw-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px}
+.fw-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:28px 24px;transition:.25s;cursor:pointer}
+.fw-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.fw-card-icon{font-size:28px;margin-bottom:16px}
+.fw-card-title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:8px;line-height:1.2}
+.fw-card-desc{font-size:13px;color:var(--ink-light);line-height:1.7;margin-bottom:16px}
+.fw-card-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:4px 10px;border-radius:100px;background:var(--accent-light);color:var(--accent)}
+.fw-card-when{font-size:11px;color:var(--ink-muted);margin-top:8px;line-height:1.5}
+
+/* ═══════════════════════════════════════════
+   HOW IT WORKS
+═══════════════════════════════════════════ */
+.hiw-section{background:var(--ink);padding:96px 72px;color:white}
+.hiw-inner{max-width:1140px;margin:0 auto}
+.hiw-section .section-label{color:var(--accent)}
+.hiw-section h2{color:white}
+.hiw-section .section-sub{color:rgba(255,255,255,.55)}
+.hiw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:44px;margin-top:56px}
+.hiw-step{position:relative}
+.step-num{font-family:'DM Serif Display',serif;font-size:52px;color:var(--accent);opacity:.3;line-height:1;margin-bottom:18px}
+.step-icon{font-size:28px;margin-bottom:14px}
+.step-title{font-family:'DM Serif Display',serif;font-size:23px;color:white;margin-bottom:10px}
+.step-desc{font-size:14px;color:rgba(255,255,255,.5);line-height:1.75;font-weight:300}
+.step-connector{position:absolute;right:-24px;top:60px;color:rgba(255,255,255,.15);font-size:24px}
+
+/* ═══════════════════════════════════════════
+   HISTORY PAGE
+═══════════════════════════════════════════ */
+.history-page{min-height:calc(100vh - 68px);padding:72px 72px;max-width:1140px;margin:0 auto}
+.history-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:48px;gap:20px;flex-wrap:wrap}
+.history-header-left h2{margin-bottom:8px}
+.history-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hist-filter-btn{background:var(--white);border:1.5px solid var(--border);color:var(--ink-light);padding:8px 16px;border-radius:var(--radius);font-family:'Karla',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.hist-filter-btn:hover,.hist-filter-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.hist-clear-all{background:transparent;border:none;color:var(--ink-muted);font-family:'Karla',sans-serif;font-size:12px;font-weight:600;cursor:pointer;padding:8px 12px;transition:.2s}
+.hist-clear-all:hover{color:var(--red)}
+.hist-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:100px 20px;text-align:center;color:var(--ink-muted)}
+.hist-empty-icon{font-size:56px;opacity:.2}
+.hist-empty h3{font-family:'DM Serif Display',serif;font-size:24px;color:var(--ink-light)}
+.hist-empty p{font-size:14px;max-width:300px;line-height:1.65}
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.hist-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:22px;transition:.25s;cursor:pointer}
+.hist-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md)}
+.hist-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.hist-card-badges{display:flex;gap:6px;flex-wrap:wrap}
+.hist-fw-badge{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:100px;background:var(--accent-light);color:var(--accent)}
+.hist-mode-badge{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:100px}
+.hist-mode-badge.ai{background:#EDE6F9;color:#6D3FB5}
+.hist-mode-badge.manual{background:var(--green-light);color:var(--green)}
+.hist-card-menu{position:relative}
+.hist-card-dots{background:transparent;border:none;color:var(--ink-muted);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1;transition:.2s}
+.hist-card-dots:hover{background:var(--bg);color:var(--ink)}
+.hist-dropdown{position:absolute;right:0;top:100%;margin-top:4px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:50;min-width:160px;overflow:hidden;display:none}
+.hist-dropdown.open{display:block}
+.hist-dd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;color:var(--ink);background:none;border:none;width:100%;text-align:left;font-family:'Karla',sans-serif}
+.hist-dd-item:hover{background:var(--bg);color:var(--accent)}
+.hist-dd-item.danger:hover{background:var(--red-light);color:var(--red)}
+.hist-card-decision{font-family:'DM Serif Display',serif;font-size:16px;margin-bottom:6px;line-height:1.3;color:var(--ink)}
+.hist-card-context{font-size:12px;color:var(--ink-muted);margin-bottom:12px;line-height:1.4}
+.hist-card-verdict{font-size:13px;color:var(--ink-light);line-height:1.55;border-top:1px solid var(--border-light);padding-top:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hist-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.hist-card-date{font-size:11px;color:var(--ink-muted)}
+.hist-card-view{font-size:12px;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'Karla',sans-serif;transition:.2s;padding:0}
+.hist-card-view:hover{color:var(--accent-dark)}
+
+/* HISTORY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,24,20,.55);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:14px;max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:modalIn .25s ease both}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{padding:22px 26px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.modal-header-info{flex:1}
+.modal-header-badges{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.modal-decision{font-family:'DM Serif Display',serif;font-size:22px;line-height:1.2;color:var(--ink)}
+.modal-context{font-size:13px;color:var(--ink-muted);margin-top:5px}
+.modal-close{background:var(--bg);border:1.5px solid var(--border);color:var(--ink-light);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0;transition:.2s;font-family:sans-serif;line-height:1}
+.modal-close:hover{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.modal-body{padding:24px 26px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 26px;border-top:1px solid var(--border);display:flex;gap:9px;flex-wrap:wrap}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+.site-footer{background:var(--ink);color:white;padding:72px 72px 0}
+.footer-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:52px;padding-bottom:56px;border-bottom:1px solid rgba(255,255,255,.08)}
+.footer-brand-logo{font-family:'DM Serif Display',serif;font-size:24px;color:white;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.footer-tagline{font-size:14px;color:rgba(255,255,255,.4);line-height:1.7;max-width:260px}
+.footer-col-title{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links a,.footer-links button{text-decoration:none;font-size:14px;color:rgba(255,255,255,.45);transition:.2s;background:none;border:none;cursor:pointer;font-family:'Karla',sans-serif;text-align:left;padding:0}
+.footer-links a:hover,.footer-links button:hover{color:white}
+.footer-bottom{max-width:1140px;margin:0 auto;padding:24px 0;display:flex;justify-content:space-between;align-items:center}
+.footer-copy{font-size:13px;color:rgba(255,255,255,.25)}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:white;padding:12px 22px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s,transform .3s;z-index:9999;pointer-events:none;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;max-width:380px;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success .toast-icon{color:#4ade80}
+.toast.error .toast-icon{color:#f87171}
+.toast.info .toast-icon{color:var(--accent)}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:1100px){.fw-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  nav{padding:0 24px}
+  .nav-links .nav-link{display:none}
+  .hero{grid-template-columns:1fr}
+  .hero-right{display:none}
+  .hero-left{padding:60px 24px 60px 24px}
+  .tool-section,.frameworks-section,.history-page{padding:60px 24px}
+  .tool-grid{grid-template-columns:1fr}
+  .result-panel{position:static}
+  .hiw-section{padding:60px 24px}
+  .hiw-grid{grid-template-columns:1fr;gap:32px}
+  .step-connector{display:none}
+  .fw-cards{grid-template-columns:1fr}
+  .site-footer{padding:56px 24px 0}
+  .footer-inner{grid-template-columns:1fr 1fr;gap:36px}
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center;padding:24px 0}
+  .pc-cols,.tl-grid{grid-template-columns:1fr}
+  .hist-grid{grid-template-columns:1fr}
+  .modal{max-height:95vh}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <a href="#" class="logo" onclick="showPage('home');return false">
+    <div class="logo-dice">
+      <div class="dot"></div><div class="dot h"></div><div class="dot"></div>
+      <div class="dot h"></div><div class="dot"></div><div class="dot h"></div>
+      <div class="dot"></div><div class="dot h"></div><div class="dot"></div>
+    </div>
+    DecisionDice
+  </a>
+  <div class="nav-links">
+    <a href="#tool" class="nav-link" id="nav-tool" onclick="showPage('home');setTimeout(()=>document.getElementById('tool').scrollIntoView({behavior:'smooth'}),100);return false">Try It</a>
+    <a href="#frameworks" class="nav-link" onclick="showPage('home');setTimeout(()=>document.getElementById('frameworks').scrollIntoView({behavior:'smooth'}),100);return false">Frameworks</a>
+    <a href="#how" class="nav-link" onclick="showPage('home');setTimeout(()=>document.getElementById('how').scrollIntoView({behavior:'smooth'}),100);return false">How It Works</a>
+    <div class="nav-divider"></div>
+    <button class="nav-hist-btn" onclick="showPage('history')">
+      📋 History <span class="hist-count" id="navHistCount">0</span>
+    </button>
+    <button class="nav-cta" onclick="showPage('home');setTimeout(()=>document.getElementById('tool').scrollIntoView({behavior:'smooth'}),100)">Make a Decision →</button>
+  </div>
+</nav>
+
+<!-- ═══════════════ HOME PAGE ═══════════════ -->
+<div class="page active" id="page-home">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag"><span class="pulse"></span> AI-Powered Decision Making</div>
+    <h1>Stop guessing.<br/>Start <em>deciding</em>.</h1>
+    <p class="hero-sub">DecisionDice applies proven logic frameworks to your toughest choices. Works entirely on its own — or let AI do the heavy thinking when you need it.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">Try It Free →</button>
+      <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How It Works</button>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-num">4</div><div class="stat-label">Frameworks</div></div>
+      <div><div class="stat-num">~30s</div><div class="stat-label">To Clarity</div></div>
+      <div><div class="stat-num">∞</div><div class="stat-label">Decisions</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-visual">
+      <div class="fw-preview-card active">
+        <div class="fpc-row"><div class="fpc-icon">⚖️</div><div class="fpc-name">Pros & Cons</div></div>
+        <div class="fpc-desc">Classic structured analysis of benefits vs drawbacks</div>
+      </div>
+      <div class="fw-preview-card">
+        <div class="fpc-row"><div class="fpc-icon">🎯</div><div class="fpc-name">Weighted Score</div></div>
+        <div class="fpc-desc">Score options against criteria that matter most to you</div>
+      </div>
+      <div class="fw-preview-card">
+        <div class="fpc-row"><div class="fpc-icon">⏳</div><div class="fpc-name">10-10-10 Rule</div></div>
+        <div class="fpc-desc">How will this feel in 10 mins, 10 months, 10 years?</div>
+      </div>
+      <div class="fw-preview-card">
+        <div class="fpc-row"><div class="fpc-icon">😈</div><div class="fpc-name">Devil's Advocate</div></div>
+        <div class="fpc-desc">Challenge your assumptions — argue the opposite view</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOL SECTION -->
+<section class="tool-section" id="tool">
+  <div class="section-label">The Tool</div>
+  <h2>What's your decision?</h2>
+  <p class="section-sub">Describe your dilemma, pick a framework, and fill in the prompts yourself — or toggle AI to let it think through the framework for you.</p>
+
+  <div class="tool-grid">
+    <!-- LEFT: INPUTS -->
+    <div class="tool-left">
+
+      <!-- Decision -->
+      <div>
+        <label>Your Decision</label>
+        <textarea id="decision" placeholder="e.g. Should I take the new job offer, or stay at my current company?"></textarea>
+      </div>
+
+      <!-- Context -->
+      <div>
+        <label>Context <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">(optional)</span></label>
+        <input class="ctx-input" id="context" type="text" placeholder="e.g. 2 years experience, prefer work-life balance, family in current city…"/>
+      </div>
+
+      <!-- Framework Picker -->
+      <div>
+        <label>Choose a Framework</label>
+        <div class="framework-picker">
+          <div class="fp-opt selected" data-fw="pros-cons" onclick="selectFW(this)">
+            <div class="fp-radio"></div>
+            <div><div class="fp-title">⚖️ Pros & Cons</div><div class="fp-sub">A balanced breakdown of upsides and downsides</div></div>
+          </div>
+          <div class="fp-opt" data-fw="weighted" onclick="selectFW(this)">
+            <div class="fp-radio"></div>
+            <div><div class="fp-title">🎯 Weighted Scoring</div><div class="fp-sub">Rate options against what matters most to you</div></div>
+          </div>
+          <div class="fp-opt" data-fw="10-10-10" onclick="selectFW(this)">
+            <div class="fp-radio"></div>
+            <div><div class="fp-title">⏳ 10-10-10 Rule</div><div class="fp-sub">See the short, medium & long-term impact clearly</div></div>
+          </div>
+          <div class="fp-opt" data-fw="devils-advocate" onclick="selectFW(this)">
+            <div class="fp-radio"></div>
+            <div><div class="fp-title">😈 Devil's Advocate</div><div class="fp-sub">Challenge your instinct — argue the other side</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Inputs (dynamic) -->
+      <div id="manualInputsWrap"></div>
+
+      <!-- AI Toggle -->
+      <div class="ai-toggle-card" id="aiToggleCard">
+        <div class="ai-card-top">
+          <div class="ai-label-wrap">
+            <div class="ai-badge">✨ AI</div>
+            <div>
+              <div class="ai-label-text">Use AI Analysis</div>
+              <div class="ai-label-sub">Works with Claude, ChatGPT, Gemini, Groq &amp; more</div>
+            </div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="aiToggle" onchange="onToggleAI()"/>
+            <span class="tog-slider"></span>
+          </label>
+        </div>
+        <!-- Provider Panel (shown when AI toggled on) -->
+        <div class="ai-provider-panel" id="aiProviderPanel" style="display:none">
+          <div class="ai-provider-label">Choose your AI provider</div>
+          <div class="ai-provider-grid" style="grid-template-columns:repeat(2,1fr)">
+            <div class="ai-provider-opt selected" data-provider="claude" onclick="selectProvider(this)">
+              <div class="ai-prov-icon"><img src="data:image/png;base64,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" width="32" height="32" style="display:block;object-fit:contain"/></div>
+              <div class="ai-prov-name">Claude</div>
+              <div class="ai-prov-sub">Anthropic</div>
+            </div>
+            <div class="ai-provider-opt" data-provider="openai" onclick="selectProvider(this)">
+              <div class="ai-prov-icon"><img src="data:image/png;base64,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" width="42" height="42" style="display:block;object-fit:contain"/></div>
+              <div class="ai-prov-name">ChatGPT</div>
+              <div class="ai-prov-sub">OpenAI</div>
+            </div>
+            <div class="ai-provider-opt" data-provider="gemini" onclick="selectProvider(this)">
+              <div class="ai-prov-icon"><img src="data:image/png;base64,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" width="32" height="32" style="display:block;object-fit:contain"/></div>
+              <div class="ai-prov-name">Gemini</div>
+              <div class="ai-prov-sub">Google</div>
+            </div>
+            <div class="ai-provider-opt" data-provider="custom" onclick="selectProvider(this)">
+              <div class="ai-prov-icon"><svg width="28" height="28" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" rx="36" fill="#4B5563"/><rect x="34" y="52" width="132" height="16" rx="8" fill="white"/><rect x="34" y="92" width="88" height="16" rx="8" fill="white" opacity="0.7"/><rect x="34" y="132" width="110" height="16" rx="8" fill="white" opacity="0.5"/></svg></div>
+              <div class="ai-prov-name">Custom</div>
+              <div class="ai-prov-sub">Any OpenAI API</div>
+            </div>
+          </div>
+          <div class="ai-config-fields" id="aiConfigFields"></div>
+          <div class="ai-mode-note show" id="aiModeNote">
+            <span>🔮</span>
+            <span>Paste your API key above, then hit <strong>Roll the Dice</strong>.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <button class="analyse-btn" id="analyseBtn" onclick="analyse()">
+        🎲 Roll the Dice
+      </button>
+    </div>
+
+    <!-- RIGHT: RESULT PANEL -->
+    <div class="result-panel">
+      <div class="result-header">
+        <div class="result-title">Analysis</div>
+        <div class="result-badges">
+          <span class="r-badge r-fw-badge" id="rFwBadge">Pros & Cons</span>
+          <span class="r-badge r-mode-badge-manual" id="rModeBadge">Manual</span>
+        </div>
+      </div>
+      <div class="result-body" id="resultBody">
+        <div class="result-placeholder">
+          <div class="ph-dice">🎲</div>
+          <p class="ph-text">Your structured decision analysis will appear here.</p>
+          <div class="ph-steps">
+            <div class="ph-step" data-n="1">Describe your decision</div>
+            <div class="ph-step" data-n="2">Pick a framework</div>
+            <div class="ph-step" data-n="3">Hit Roll the Dice</div>
+          </div>
+        </div>
+      </div>
+      <div class="result-footer" id="resultFooter" style="display:none">
+        <button class="r-act-btn copy-btn" onclick="copyResult()">📋 Copy</button>
+        <button class="r-act-btn pdf-btn" onclick="downloadPDF()">⬇ PDF</button>
+        <button class="r-act-btn save-btn" onclick="saveToHistory()">🔖 Save to History</button>
+        <button class="r-act-btn clear-btn" onclick="clearResult()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FRAMEWORKS SECTION -->
+<section class="frameworks-section" id="frameworks">
+  <div class="frameworks-inner">
+    <div class="section-label">The Frameworks</div>
+    <h2>Four ways to think clearly.</h2>
+    <p class="section-sub">Each framework is designed for a different type of decision. Pick the one that fits your situation, or try all four.</p>
+    <div class="fw-cards">
+      <div class="fw-card" onclick="selectFWByName('pros-cons');document.getElementById('tool').scrollIntoView({behavior:'smooth'})">
+        <div class="fw-card-icon">⚖️</div>
+        <div class="fw-card-title">Pros & Cons</div>
+        <div class="fw-card-desc">Systematically list every advantage and disadvantage. Clear, balanced, intuitive.</div>
+        <div class="fw-card-tag">Everyday decisions</div>
+        <div class="fw-card-when">Best when you need a clear overview without deep complexity.</div>
+      </div>
+      <div class="fw-card" onclick="selectFWByName('weighted');document.getElementById('tool').scrollIntoView({behavior:'smooth'})">
+        <div class="fw-card-icon">🎯</div>
+        <div class="fw-card-title">Weighted Scoring</div>
+        <div class="fw-card-desc">Define criteria, assign importance, score each option. Data-driven clarity.</div>
+        <div class="fw-card-tag">Multi-option choices</div>
+        <div class="fw-card-when">Best when you have multiple competing factors and want objectivity.</div>
+      </div>
+      <div class="fw-card" onclick="selectFWByName('10-10-10');document.getElementById('tool').scrollIntoView({behavior:'smooth'})">
+        <div class="fw-card-icon">⏳</div>
+        <div class="fw-card-title">10-10-10 Rule</div>
+        <div class="fw-card-desc">Ask: how will I feel in 10 minutes, 10 months, 10 years? Time-shift your perspective.</div>
+        <div class="fw-card-tag">Emotionally charged</div>
+        <div class="fw-card-when">Best when you're overwhelmed by immediate emotions.</div>
+      </div>
+      <div class="fw-card" onclick="selectFWByName('devils-advocate');document.getElementById('tool').scrollIntoView({behavior:'smooth'})">
+        <div class="fw-card-icon">😈</div>
+        <div class="fw-card-title">Devil's Advocate</div>
+        <div class="fw-card-desc">Deliberately argue against your gut instinct. Expose weak logic and hidden assumptions.</div>
+        <div class="fw-card-tag">Stress-testing ideas</div>
+        <div class="fw-card-when">Best when you suspect you've already made up your mind.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="hiw-section" id="how">
+  <div class="hiw-inner">
+    <div class="section-label">How It Works</div>
+    <h2>Three steps to clarity.</h2>
+    <p class="section-sub">No fluff. No vague advice. Just structured logic applied to your real situation.</p>
+    <div class="hiw-grid">
+      <div class="hiw-step">
+        <div class="step-num">01</div>
+        <div class="step-icon">✍️</div>
+        <div class="step-title">Describe your dilemma</div>
+        <div class="step-desc">Write the decision you're wrestling with. Add context — situation, priorities, constraints. The more specific, the better the output.</div>
+        <div class="step-connector">→</div>
+      </div>
+      <div class="hiw-step">
+        <div class="step-num">02</div>
+        <div class="step-icon">🧠</div>
+        <div class="step-title">Pick your thinking mode</div>
+        <div class="step-desc">Choose a framework and fill in the structured prompts yourself — or toggle AI to have it instantly apply the full framework to your situation.</div>
+        <div class="step-connector">→</div>
+      </div>
+      <div class="hiw-step">
+        <div class="step-num">03</div>
+        <div class="step-icon">🎯</div>
+        <div class="step-title">Get structured clarity</div>
+        <div class="step-desc">Your inputs are structured into a clear, actionable analysis. Save it to History, download as PDF, or copy and share it — the decision is yours to make.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand-logo">🎲 DecisionDice</div>
+      <div class="footer-tagline">Structured thinking for people who take their decisions seriously. Works without AI. Better with it.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Navigate</div>
+      <ul class="footer-links">
+        <li><button onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">Try the Tool</button></li>
+        <li><button onclick="document.getElementById('frameworks').scrollIntoView({behavior:'smooth'})">Frameworks</button></li>
+        <li><button onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How It Works</button></li>
+        <li><button onclick="showPage('history')">Decision History</button></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Frameworks</div>
+      <ul class="footer-links">
+        <li><button onclick="selectFWByName('pros-cons');document.getElementById('tool').scrollIntoView({behavior:'smooth'})">⚖️ Pros & Cons</button></li>
+        <li><button onclick="selectFWByName('weighted');document.getElementById('tool').scrollIntoView({behavior:'smooth'})">🎯 Weighted Scoring</button></li>
+        <li><button onclick="selectFWByName('10-10-10');document.getElementById('tool').scrollIntoView({behavior:'smooth'})">⏳ 10-10-10 Rule</button></li>
+        <li><button onclick="selectFWByName('devils-advocate');document.getElementById('tool').scrollIntoView({behavior:'smooth'})">😈 Devil's Advocate</button></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Features</div>
+      <ul class="footer-links">
+        <li><a href="#">✨ AI Analysis</a></li>
+        <li><a href="#">📋 Decision History</a></li>
+        <li><a href="#">⬇ PDF Export</a></li>
+        <li><a href="#">🔖 Save & Revisit</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 DecisionDice. Built for thinkers who act.</div>
+    <div class="footer-copy">Make smarter choices, every time.</div>
+  </div>
+</footer>
+
+</div><!-- /page-home -->
+
+<!-- ═══════════════ HISTORY PAGE ═══════════════ -->
+<div class="page" id="page-history">
+  <div class="history-page">
+    <div class="history-header">
+      <div class="history-header-left">
+        <div class="section-label">Decision History</div>
+        <h2>Your past decisions.</h2>
+        <p class="section-sub" style="margin-bottom:0">Every decision you've saved is stored here in your browser. Click any card to review the full analysis.</p>
+      </div>
+      <div class="history-controls">
+        <button class="hist-filter-btn active" data-filter="all" onclick="filterHistory(this)">All</button>
+        <button class="hist-filter-btn" data-filter="pros-cons" onclick="filterHistory(this)">⚖️ Pros & Cons</button>
+        <button class="hist-filter-btn" data-filter="weighted" onclick="filterHistory(this)">🎯 Weighted</button>
+        <button class="hist-filter-btn" data-filter="10-10-10" onclick="filterHistory(this)">⏳ 10-10-10</button>
+        <button class="hist-filter-btn" data-filter="devils-advocate" onclick="filterHistory(this)">😈 Devil's</button>
+        <button class="hist-clear-all" onclick="clearAllHistory()">Clear All</button>
+      </div>
+    </div>
+    <div id="historyGrid"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-logo">🎲 DecisionDice</div>
+        <div class="footer-tagline">Your history is stored locally in your browser — private, fast, always available.</div>
+      </div>
+      <div>
+        <div class="footer-col-title">Navigate</div>
+        <ul class="footer-links">
+          <li><button onclick="showPage('home')">← Back to Tool</button></li>
+          <li><button onclick="showPage('home');setTimeout(()=>document.getElementById('frameworks').scrollIntoView({behavior:'smooth'}),100)">Frameworks</button></li>
+          <li><button onclick="showPage('home');setTimeout(()=>document.getElementById('how').scrollIntoView({behavior:'smooth'}),100)">How It Works</button></li>
+        </ul>
+      </div>
+      <div></div><div></div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 DecisionDice.</div>
+    </div>
+  </footer>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="histModal" onclick="closeHistModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-header-badges" id="modalBadges"></div>
+        <div class="modal-decision" id="modalDecision"></div>
+        <div class="modal-context" id="modalContext"></div>
+      </div>
+      <button class="modal-close" onclick="closeHistModal(null)">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="r-act-btn copy-btn" onclick="copyModalResult()">📋 Copy</button>
+      <button class="r-act-btn pdf-btn" onclick="downloadModalPDF()">⬇ PDF</button>
+      <button class="r-act-btn clear-btn" style="margin-left:auto" onclick="deleteHistoryItem()">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="toast-icon" id="toastIcon"></span><span id="toastMsg"></span></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+<script>
+// ─── STATE ──────────────────────────────────────────────────
+let selectedFW = 'pros-cons';
+let useAI = false;
+let currentResultHTML = '';
+let currentResultText = '';
+let currentDecision = '';
+let currentContext = '';
+let currentOpenHistId = null;
+
+const FW_NAMES = {
+  'pros-cons':'Pros & Cons',
+  'weighted':'Weighted Scoring',
+  '10-10-10':'10-10-10 Rule',
+  'devils-advocate':"Devil's Advocate"
+};
+
+// ─── PAGE ROUTING ────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  window.scrollTo(0,0);
+  if (name === 'history') renderHistoryGrid();
+}
+
+// ─── FRAMEWORK SELECTION ────────────────────────────────────
+function selectFW(el) {
+  document.querySelectorAll('.fp-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFW = el.dataset.fw;
+  document.getElementById('rFwBadge').textContent = FW_NAMES[selectedFW];
+  renderManualInputs();
+}
+function selectFWByName(name) {
+  const el = document.querySelector(`.fp-opt[data-fw="${name}"]`);
+  if (el) selectFW(el);
+}
+
+// ─── AI TOGGLE ───────────────────────────────────────────────
+// ─── PROVIDER CONFIG ─────────────────────────────────────────
+const PROVIDERS = {
+  claude: {
+    name:'Claude (Anthropic)',
+    keyPlaceholder:'sk-ant-api03-...',
+    keyLink:'https://console.anthropic.com/settings/keys',
+    keyLinkText:'console.anthropic.com',
+    models:['claude-sonnet-4-20250514','claude-3-5-haiku-20241022','claude-opus-4-20250514'],
+    modelDefault:'claude-sonnet-4-20250514'
+  },
+  openai: {
+    name:'ChatGPT (OpenAI)',
+    keyPlaceholder:'sk-...',
+    keyLink:'https://platform.openai.com/api-keys',
+    keyLinkText:'platform.openai.com',
+    models:['gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-3.5-turbo'],
+    modelDefault:'gpt-4o'
+  },
+  gemini: {
+    name:'Gemini (Google)',
+    keyPlaceholder:'AIza...',
+    keyLink:'https://aistudio.google.com/app/apikey',
+    keyLinkText:'aistudio.google.com',
+    models:['gemini-1.5-pro','gemini-1.5-flash','gemini-2.0-flash'],
+    modelDefault:'gemini-1.5-pro'
+  },
+  custom: {
+    name:'Custom (OpenAI-compatible)',
+    keyPlaceholder:'your-api-key',
+    keyLink:null,
+    models:['custom-model'],
+    modelDefault:'custom-model',
+    showEndpoint:true
+  }
+};
+
+let selectedProvider = 'claude';
+
+function onToggleAI() {
+  useAI = document.getElementById('aiToggle').checked;
+  document.getElementById('aiProviderPanel').style.display = useAI ? 'block' : 'none';
+  document.getElementById('aiToggleCard').classList.toggle('ai-on', useAI);
+  const modeBadge = document.getElementById('rModeBadge');
+  if (useAI) {
+    modeBadge.textContent = 'AI';
+    modeBadge.className = 'r-badge r-mode-badge-ai';
+    renderProviderFields();
+  } else {
+    modeBadge.textContent = 'Manual';
+    modeBadge.className = 'r-badge r-mode-badge-manual';
+  }
+  renderManualInputs();
+}
+
+function selectProvider(el) {
+  document.querySelectorAll('.ai-provider-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedProvider = el.dataset.provider;
+  renderProviderFields();
+}
+
+function renderProviderFields() {
+  const p = PROVIDERS[selectedProvider];
+  const fields = document.getElementById('aiConfigFields');
+  const modelsHTML = p.models.map(m=>`<option value="${m}"${m===p.modelDefault?' selected':''}>${m}</option>`).join('');
+  const keyNote = p.keyLink
+    ? `Get your free key at <a href="${p.keyLink}" target="_blank">${p.keyLinkText}</a>`
+    : 'Paste your API key from your provider dashboard';
+
+  fields.innerHTML = `
+    ${p.showEndpoint ? `<div class="ai-field-group">
+      <div class="ai-field-label">API Endpoint URL</div>
+      <input class="ai-key-inp" id="aiEndpoint" type="text" placeholder="https://your-endpoint/v1/chat/completions"/>
+    </div>` : ''}
+    <div class="ai-field-group">
+      <div class="ai-field-label">API Key</div>
+      <input class="ai-key-inp" id="aiApiKey" type="password" placeholder="${p.keyPlaceholder}" autocomplete="off"/>
+      <div class="ai-field-note">${keyNote}</div>
+    </div>
+    <div class="ai-field-group">
+      <div class="ai-field-label">Model</div>
+      <select class="ai-model-select" id="aiModel">${modelsHTML}</select>
+    </div>`;
+}
+
+// ─── MANUAL INPUTS RENDERER ──────────────────────────────────
+function renderManualInputs() {
+  const wrap = document.getElementById('manualInputsWrap');
+  if (useAI) { wrap.innerHTML = ''; return; }
+
+  if (selectedFW === 'pros-cons') {
+    wrap.innerHTML = `<div class="manual-box">
+      <div class="manual-box-title">Your Pros & Cons</div>
+      <div>
+        <div class="mini-label">✅ Pros — reasons to do it</div>
+        <div id="prosList"></div>
+        <button class="add-btn" onclick="addListItem('prosList','pro')">+ Add a Pro</button>
+      </div>
+      <div>
+        <div class="mini-label">❌ Cons — reasons against</div>
+        <div id="consList"></div>
+        <button class="add-btn" onclick="addListItem('consList','con')">+ Add a Con</button>
+      </div>
+      <div>
+        <div class="mini-label">Your Verdict <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <textarea class="mini-ta" id="manualVerdict" placeholder="What do you think you should do and why?"></textarea>
+      </div>
+    </div>`;
+    addListItem('prosList','pro'); addListItem('prosList','pro');
+    addListItem('consList','con'); addListItem('consList','con');
+
+  } else if (selectedFW === 'weighted') {
+    wrap.innerHTML = `<div class="manual-box">
+      <div class="manual-box-title">Weighted Scoring</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><div class="mini-label">Option A</div><input class="mini-inp" id="optA" placeholder="e.g. Take new job" oninput="updateCritLabels()"/></div>
+        <div><div class="mini-label">Option B</div><input class="mini-inp" id="optB" placeholder="e.g. Stay at current" oninput="updateCritLabels()"/></div>
+      </div>
+      <div>
+        <div class="mini-label">Criteria — score each option 1–10</div>
+        <div id="criteriaList"></div>
+        <button class="add-btn" onclick="addCriteria()">+ Add Criteria</button>
+      </div>
+    </div>`;
+    addCriteria('Salary / Financial',8,6);
+    addCriteria('Career Growth',9,5);
+    addCriteria('Work-Life Balance',5,8);
+
+  } else if (selectedFW === '10-10-10') {
+    wrap.innerHTML = `<div class="manual-box">
+      <div class="manual-box-title">10-10-10 Rule</div>
+      <div><div class="mini-label">⚡ In 10 Minutes — immediate reaction</div><textarea class="mini-ta" id="t10m" placeholder="How will I feel right after choosing this?"></textarea></div>
+      <div><div class="mini-label">📅 In 10 Months — short-term consequences</div><textarea class="mini-ta" id="t10mo" placeholder="What will life look like in about a year?"></textarea></div>
+      <div><div class="mini-label">🔭 In 10 Years — long-term view</div><textarea class="mini-ta" id="t10y" placeholder="From a decade away, how significant is this?"></textarea></div>
+      <div><div class="mini-label">Your Verdict <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div><textarea class="mini-ta" id="manualVerdict" placeholder="Which choice holds up across all three horizons?"></textarea></div>
+    </div>`;
+
+  } else if (selectedFW === 'devils-advocate') {
+    wrap.innerHTML = `<div class="manual-box">
+      <div class="manual-box-title">Devil's Advocate</div>
+      <div><div class="mini-label">Your Likely Instinct</div><input class="mini-inp" id="daInstinct" placeholder="What do you think you want to do?"/></div>
+      <div><div class="mini-label">Challenges Against It</div><div id="daChallenges"></div><button class="add-btn" onclick="addDAItem('daChallenges','Challenge — e.g. What if the team is toxic?')">+ Add Challenge</button></div>
+      <div><div class="mini-label">Hidden Assumptions</div><div id="daAssumptions"></div><button class="add-btn" onclick="addDAItem('daAssumptions','Assumption — e.g. The offer won\\'t expire...')">+ Add Assumption</button></div>
+      <div><div class="mini-label">The Stronger Alternative</div><textarea class="mini-ta" id="daAlt" placeholder="Make the case for the opposite choice..."></textarea></div>
+      <div><div class="mini-label">Your Verdict <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div><textarea class="mini-ta" id="manualVerdict" placeholder="After stress-testing both sides, what's soundest?"></textarea></div>
+    </div>`;
+    addDAItem('daChallenges','e.g. What if the new role has a toxic manager?');
+    addDAItem('daChallenges','e.g. What if the salary bump doesn\'t offset the stress?');
+    addDAItem('daAssumptions','e.g. Assuming the grass is always greener...');
+    addDAItem('daAssumptions','e.g. Assuming my current company won\'t improve...');
+  }
+}
+
+function addListItem(listId, type) {
+  const list = document.getElementById(listId);
+  const row = document.createElement('div'); row.className = 'item-row';
+  const inp = document.createElement('input'); inp.className = 'mini-inp';
+  inp.placeholder = type==='pro' ? 'e.g. Higher salary, more growth opportunities…' : 'e.g. Longer commute, uncertain team culture…';
+  const rm = document.createElement('button'); rm.className = 'rm-btn'; rm.textContent = '×'; rm.onclick = ()=>row.remove();
+  row.append(inp,rm); list.appendChild(row);
+}
+
+function addCriteria(name='',a='',b='') {
+  const list = document.getElementById('criteriaList');
+  const div = document.createElement('div'); div.className = 'crit-card';
+  const oA = document.getElementById('optA')?.value||'Option A';
+  const oB = document.getElementById('optB')?.value||'Option B';
+  div.innerHTML = `<div class="crit-header">
+    <input class="mini-inp" placeholder="Criteria e.g. Salary" value="${esc(name)}"/>
+    <button class="rm-btn" onclick="this.closest('.crit-card').remove()">×</button>
+  </div>
+  <div class="crit-scores">
+    <div><div class="mini-label crit-lbl-a">${esc(oA)} Score</div><input class="mini-inp score-inp" type="number" min="1" max="10" placeholder="1–10" value="${a}"/></div>
+    <div><div class="mini-label crit-lbl-b">${esc(oB)} Score</div><input class="mini-inp score-inp" type="number" min="1" max="10" placeholder="1–10" value="${b}"/></div>
+  </div>`;
+  list.appendChild(div);
+}
+
+function updateCritLabels() {
+  const oA = document.getElementById('optA')?.value||'Option A';
+  const oB = document.getElementById('optB')?.value||'Option B';
+  document.querySelectorAll('.crit-lbl-a').forEach(l=>l.textContent=oA+' Score');
+  document.querySelectorAll('.crit-lbl-b').forEach(l=>l.textContent=oB+' Score');
+}
+
+function addDAItem(listId, placeholder) {
+  const list = document.getElementById(listId);
+  const row = document.createElement('div'); row.className = 'item-row';
+  const inp = document.createElement('input'); inp.className = 'mini-inp'; inp.placeholder = placeholder;
+  const rm = document.createElement('button'); rm.className = 'rm-btn'; rm.textContent = '×'; rm.onclick = ()=>row.remove();
+  row.append(inp,rm); list.appendChild(row);
+}
+
+// ─── COLLECT MANUAL DATA ─────────────────────────────────────
+function collectManual() {
+  if (selectedFW === 'pros-cons') {
+    return {
+      pros: [...document.querySelectorAll('#prosList .mini-inp')].map(i=>i.value.trim()).filter(Boolean),
+      cons: [...document.querySelectorAll('#consList .mini-inp')].map(i=>i.value.trim()).filter(Boolean),
+      verdict: document.getElementById('manualVerdict')?.value.trim()||''
+    };
+  } else if (selectedFW === 'weighted') {
+    return {
+      optA: document.getElementById('optA')?.value.trim()||'Option A',
+      optB: document.getElementById('optB')?.value.trim()||'Option B',
+      criteria: [...document.querySelectorAll('#criteriaList .crit-card')].map(c=>{
+        const inps=c.querySelectorAll('input');
+        return {name:inps[0]?.value.trim()||'',scoreA:parseInt(inps[1]?.value)||0,scoreB:parseInt(inps[2]?.value)||0};
+      }).filter(c=>c.name)
+    };
+  } else if (selectedFW === '10-10-10') {
+    return {
+      t10m: document.getElementById('t10m')?.value.trim()||'',
+      t10mo: document.getElementById('t10mo')?.value.trim()||'',
+      t10y: document.getElementById('t10y')?.value.trim()||'',
+      verdict: document.getElementById('manualVerdict')?.value.trim()||''
+    };
+  } else {
+    return {
+      instinct: document.getElementById('daInstinct')?.value.trim()||'',
+      challenges: [...document.querySelectorAll('#daChallenges .mini-inp')].map(i=>i.value.trim()).filter(Boolean),
+      assumptions: [...document.querySelectorAll('#daAssumptions .mini-inp')].map(i=>i.value.trim()).filter(Boolean),
+      alt: document.getElementById('daAlt')?.value.trim()||'',
+      verdict: document.getElementById('manualVerdict')?.value.trim()||''
+    };
+  }
+}
+
+// ─── BUILD MANUAL HTML ───────────────────────────────────────
+function buildManualHTML(decision, context, data) {
+  const fw = selectedFW;
+  let html = `<div class="res-section"><div class="res-section-title">Decision</div><p style="font-size:14px;font-weight:600;line-height:1.5">${esc(decision)}${context?`<span style="font-weight:400;color:var(--ink-muted);font-size:13px;display:block;margin-top:4px">${esc(context)}</span>`:''}</p></div>`;
+
+  if (fw === 'pros-cons') {
+    const pros = data.pros.length ? data.pros.map(p=>`<li><span class="pc-bullet">●</span>${esc(p)}</li>`).join('') : `<li><span class="pc-bullet">●</span><span class="empty-state">No pros added</span></li>`;
+    const cons = data.cons.length ? data.cons.map(c=>`<li><span class="pc-bullet">●</span>${esc(c)}</li>`).join('') : `<li><span class="pc-bullet">●</span><span class="empty-state">No cons added</span></li>`;
+    html += `<div class="res-section"><div class="res-section-title">Pros & Cons Analysis</div>
+      <div class="pc-cols">
+        <div class="pc-col pros"><div class="pc-col-title">✅ Pros (${data.pros.length})</div><ul class="pc-list">${pros}</ul></div>
+        <div class="pc-col cons"><div class="pc-col-title">❌ Cons (${data.cons.length})</div><ul class="pc-list">${cons}</ul></div>
+      </div></div>`;
+    const total = data.pros.length + data.cons.length;
+    const pct = total>0 ? Math.round(data.pros.length/total*100) : 50;
+    const lean = pct>58 ? '👍 Leans toward doing it' : pct<42 ? '👎 Leans against doing it' : '⚖️ Roughly balanced';
+    html += `<div class="balance-bar-wrap"><div class="bal-label">Balance Score</div><div class="bal-track"><div class="bal-fill" id="balFill" style="width:0%"></div></div><div class="bal-info"><div class="bal-lean">${lean}</div><div class="bal-score">${data.pros.length} Pros · ${data.cons.length} Cons</div></div></div>`;
+    if (data.verdict) html += `<div class="verdict-box" style="margin-top:16px"><div class="verdict-label">🎯 Your Verdict</div><div class="verdict-text">${esc(data.verdict)}</div></div>`;
+    setTimeout(()=>{const el=document.getElementById('balFill');if(el)el.style.width=pct+'%'},100);
+
+  } else if (fw === 'weighted') {
+    const totA = data.criteria.reduce((s,c)=>s+c.scoreA,0);
+    const totB = data.criteria.reduce((s,c)=>s+c.scoreB,0);
+    const max = data.criteria.length * 10;
+    const winner = totA>=totB ? data.optA : data.optB;
+    const rows = data.criteria.map(c=>`<tr>
+      <td style="font-weight:600;font-size:13px">${esc(c.name)}</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:0%" data-w="${c.scoreA*10}"></div></div><span class="bar-num">${c.scoreA}</span></div></td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:0%" data-w="${c.scoreB*10}"></div></div><span class="bar-num">${c.scoreB}</span></div></td>
+    </tr>`).join('');
+    html += `<div class="res-section"><div class="res-section-title">Scoring Table</div>
+      ${data.criteria.length?`<table class="score-tbl">
+        <thead><tr><th>Criteria</th><th>${esc(data.optA)}</th><th>${esc(data.optB)}</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr style="background:var(--bg)"><td style="font-weight:700">Total Score</td>
+          <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:0%" data-w="${max>0?Math.round(totA/max*100):0}"></div></div><span class="bar-num" style="font-size:15px">${totA}</span></div></td>
+          <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:0%" data-w="${max>0?Math.round(totB/max*100):0}"></div></div><span class="bar-num" style="font-size:15px">${totB}</span></div></td>
+        </tr></tfoot>
+      </table>` : '<p class="empty-state">No criteria added.</p>'}
+    </div>`;
+    if (data.criteria.length) html += `<div class="verdict-box"><div class="verdict-label">🎯 Result</div><div class="verdict-text"><strong>${esc(winner)}</strong> scores higher (${totA>=totB?totA:totB}/${max} vs ${totA>=totB?totB:totA}/${max}). Based on your weighted criteria, this option better aligns with your priorities.</div></div>`;
+    setTimeout(()=>{ document.querySelectorAll('.bar-fill[data-w]').forEach(el=>{el.style.width=el.dataset.w+'%'}); },100);
+
+  } else if (fw === '10-10-10') {
+    html += `<div class="res-section"><div class="res-section-title">The Three Time Horizons</div>
+      <div class="tl-grid">
+        <div class="tl-card"><div class="tl-period">⚡ In 10 Minutes</div><div class="tl-content">${data.t10m||'<span class="empty-state">Not filled in</span>'}</div></div>
+        <div class="tl-card"><div class="tl-period">📅 In 10 Months</div><div class="tl-content">${data.t10mo||'<span class="empty-state">Not filled in</span>'}</div></div>
+        <div class="tl-card"><div class="tl-period">🔭 In 10 Years</div><div class="tl-content">${data.t10y||'<span class="empty-state">Not filled in</span>'}</div></div>
+      </div></div>`;
+    if (data.verdict) html += `<div class="verdict-box"><div class="verdict-label">🎯 Your Verdict</div><div class="verdict-text">${esc(data.verdict)}</div></div>`;
+
+  } else {
+    const challenges = data.challenges.length ? data.challenges.map(c=>`<div class="da-challenge">${esc(c)}</div>`).join('') : '<div class="da-challenge empty-state">No challenges added</div>';
+    const assumptions = data.assumptions.length ? data.assumptions.map(a=>`<div class="da-assumption">${esc(a)}</div>`).join('') : '<div class="da-assumption empty-state">No assumptions listed</div>';
+    if (data.instinct) html += `<div class="res-section"><div class="res-section-title">Your Likely Instinct</div><p style="font-size:14px;font-weight:600">${esc(data.instinct)}</p></div>`;
+    html += `<div class="res-section"><div class="res-section-title">Challenges Against It</div>${challenges}</div>`;
+    html += `<div class="res-section"><div class="res-section-title">Hidden Assumptions</div>${assumptions}</div>`;
+    if (data.alt) html += `<div class="res-section"><div class="res-section-title">The Stronger Alternative</div><p style="font-size:14px;line-height:1.65">${esc(data.alt)}</p></div>`;
+    if (data.verdict) html += `<div class="verdict-box"><div class="verdict-label">🎯 Your Verdict</div><div class="verdict-text">${esc(data.verdict)}</div></div>`;
+  }
+  return html;
+}
+
+// ─── UNIVERSAL AI CALLER ─────────────────────────────────────
+async function callAIProvider(provider, apiKey, model, prompt) {
+  let url, headers, body, extractFn;
+
+  if (provider === 'claude') {
+    url = 'https://api.anthropic.com/v1/messages';
+    headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    };
+    body = JSON.stringify({ model, max_tokens: 1400, messages: [{ role: 'user', content: prompt }] });
+    extractFn = d => { if(d.error) throw new Error(d.error.message); return d.content?.map(b=>b.text||'').join('')||''; };
+
+  } else if (provider === 'openai') {
+    url = 'https://api.openai.com/v1/chat/completions';
+    headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey };
+    body = JSON.stringify({ model, max_tokens: 1400, messages: [{ role: 'user', content: prompt }] });
+    extractFn = d => { if(d.error) throw new Error(d.error.message); return d.choices?.[0]?.message?.content||''; };
+
+  } else if (provider === 'gemini') {
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    headers = { 'Content-Type': 'application/json' };
+    body = JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 1400 } });
+    extractFn = d => { if(d.error) throw new Error(d.error.message); return d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||''; };
+
+  } else if (provider === 'groq') {
+    url = 'https://api.groq.com/openai/v1/chat/completions';
+    headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey };
+    body = JSON.stringify({ model, max_tokens: 1400, messages: [{ role: 'user', content: prompt }] });
+    extractFn = d => { if(d.error) throw new Error(d.error.message||JSON.stringify(d.error)); return d.choices?.[0]?.message?.content||''; };
+
+  } else if (provider === 'mistral') {
+    url = 'https://api.mistral.ai/v1/chat/completions';
+    headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey };
+    body = JSON.stringify({ model, max_tokens: 1400, messages: [{ role: 'user', content: prompt }] });
+    extractFn = d => { if(d.error) throw new Error(d.error.message||JSON.stringify(d.error)); return d.choices?.[0]?.message?.content||''; };
+
+  } else if (provider === 'custom') {
+    const endpoint = document.getElementById('aiEndpoint')?.value.trim();
+    if (!endpoint) throw new Error('Please enter a custom endpoint URL.');
+    url = endpoint;
+    headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey };
+    body = JSON.stringify({ model, max_tokens: 1400, messages: [{ role: 'user', content: prompt }] });
+    extractFn = d => { if(d.error) throw new Error(d.error.message||JSON.stringify(d.error)); return d.choices?.[0]?.message?.content||''; };
+
+  } else {
+    throw new Error('Unknown provider: ' + provider);
+  }
+
+  const response = await fetch(url, { method: 'POST', headers, body });
+  let data;
+  try { data = await response.json(); } catch(e) { throw new Error('Invalid response from API. Check your key and try again.'); }
+  if (!response.ok && !data.error) throw new Error(`API error ${response.status}: ${response.statusText}`);
+  return extractFn(data);
+}
+
+// ─── AI PROMPT & RENDER ──────────────────────────────────────
+function getAIPrompt(decision, context) {
+  const ctx = context ? `\n\nAdditional context: ${context}` : '';
+  const p = {
+    'pros-cons': `You are a sharp, thoughtful decision coach using the Pros & Cons framework.\n\nDecision: ${decision}${ctx}\n\nRespond with these exact sections:\n### Understanding the Decision\n### Pros\n### Cons\n### Hidden Factors\n### Verdict\n\nBe concrete and specific to their situation. Use bullet points under each section.`,
+    'weighted': `You are a sharp decision coach using Weighted Scoring.\n\nDecision: ${decision}${ctx}\n\nRespond with these exact sections:\n### Key Decision Criteria\n### Scoring Analysis\n### What the Numbers Say\n### Verdict\n\nScore each option 1-10 on each criterion. Be specific.`,
+    '10-10-10': `You are a decision coach applying the 10-10-10 Rule.\n\nDecision: ${decision}${ctx}\n\nRespond with these exact sections:\n### In 10 Minutes\n### In 10 Months\n### In 10 Years\n### The Time Lens Insight\n### Verdict\n\nBe vivid and specific to their situation.`,
+    'devils-advocate': `You are a critical thinking coach using Devil's Advocate.\n\nDecision: ${decision}${ctx}\n\nRespond with these exact sections:\n### Your Likely Instinct\n### The Case Against It\n### Assumptions Being Made\n### The Stronger Alternative\n### What This Reveals\n### Verdict\n\nBe bold and direct.`
+  };
+  return p[selectedFW];
+}
+
+function renderAIHTML(text) {
+  let html = text
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g,m=>`<ul>${m}</ul>`)
+    .replace(/\n\n/g,'</p><p>');
+  const vm = html.match(/<h3>.*?Verdict.*?<\/h3>([\s\S]*?)(?=<h3>|$)/i);
+  if (vm) {
+    html = html.replace(vm[0], `<div class="ai-verdict"><div class="ai-verdict-label">🎯 Verdict</div>${vm[0].replace(/<h3>.*?<\/h3>/i,'')}</div>`);
+  }
+  return `<div class="ai-result"><p>${html}</p></div>`;
+}
+
+// ─── MAIN ANALYSE ────────────────────────────────────────────
+async function analyse() {
+  const decision = document.getElementById('decision').value.trim();
+  if (!decision) {
+    const ta = document.getElementById('decision');
+    ta.focus(); ta.style.borderColor='#e74c3c';
+    setTimeout(()=>ta.style.borderColor='',2500);
+    toast('Please describe your decision first.','error'); return;
+  }
+  const context = document.getElementById('context').value.trim();
+  currentDecision = decision; currentContext = context;
+  const btn = document.getElementById('analyseBtn');
+  const body = document.getElementById('resultBody');
+  const footer = document.getElementById('resultFooter');
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Analysing…';
+  footer.style.display = 'none';
+  body.innerHTML = `<div class="loader"><div class="spin-ring"></div><div class="loader-msg">Applying ${FW_NAMES[selectedFW]} framework…</div></div>`;
+
+  try {
+    if (useAI) {
+      const apiKey = document.getElementById('aiApiKey')?.value.trim();
+      if (!apiKey) throw new Error('Please enter your API key in the AI settings above.');
+      const model = document.getElementById('aiModel')?.value || '';
+      const prompt = getAIPrompt(decision, context);
+      const text = await callAIProvider(selectedProvider, apiKey, model, prompt);
+      currentResultHTML = renderAIHTML(text);
+      currentResultText = text;
+    } else {
+      const data = collectManual();
+      await new Promise(r=>setTimeout(r,420)); // brief delay for feel
+      currentResultHTML = buildManualHTML(decision, context, data);
+      currentResultText = buildResultText(decision, context, data);
+    }
+    body.innerHTML = currentResultHTML;
+    footer.style.display = 'flex';
+  } catch(err) {
+    body.innerHTML = `<div class="result-placeholder"><div class="ph-dice" style="animation:none">⚠️</div><p class="ph-text" style="color:var(--red)">${esc(err.message||'Something went wrong. Please try again.')}</p></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🎲 Roll the Dice';
+  }
+}
+
+function buildResultText(decision, context, data) {
+  let t = `DECISION: ${decision}\n`;
+  if (context) t += `CONTEXT: ${context}\n`;
+  t += `FRAMEWORK: ${FW_NAMES[selectedFW]}\n\n`;
+  if (selectedFW==='pros-cons') {
+    t+=`PROS:\n${data.pros.map(p=>`• ${p}`).join('\n')||'(none)'}\n\nCONS:\n${data.cons.map(c=>`• ${c}`).join('\n')||'(none)'}`;
+    if(data.verdict) t+=`\n\nVERDICT:\n${data.verdict}`;
+  } else if (selectedFW==='weighted') {
+    t+=`OPTIONS: ${data.optA} vs ${data.optB}\n\nCRITERIA:\n`;
+    data.criteria.forEach(c=>t+=`${c.name}: ${data.optA}=${c.scoreA}, ${data.optB}=${c.scoreB}\n`);
+    const tA=data.criteria.reduce((s,c)=>s+c.scoreA,0), tB=data.criteria.reduce((s,c)=>s+c.scoreB,0);
+    t+=`\nTOTALS: ${data.optA}=${tA}, ${data.optB}=${tB}`;
+  } else if (selectedFW==='10-10-10') {
+    t+=`IN 10 MINUTES:\n${data.t10m||'—'}\n\nIN 10 MONTHS:\n${data.t10mo||'—'}\n\nIN 10 YEARS:\n${data.t10y||'—'}`;
+    if(data.verdict) t+=`\n\nVERDICT:\n${data.verdict}`;
+  } else {
+    t+=`INSTINCT: ${data.instinct||'—'}\n\nCHALLENGES:\n${data.challenges.map(c=>`• ${c}`).join('\n')||'(none)'}\n\nASSUMPTIONS:\n${data.assumptions.map(a=>`• ${a}`).join('\n')||'(none)'}`;
+    if(data.alt) t+=`\n\nSTRONGER ALTERNATIVE:\n${data.alt}`;
+    if(data.verdict) t+=`\n\nVERDICT:\n${data.verdict}`;
+  }
+  return t;
+}
+
+function clearResult() {
+  document.getElementById('resultBody').innerHTML = `<div class="result-placeholder"><div class="ph-dice">🎲</div><p class="ph-text">Your structured decision analysis will appear here.</p><div class="ph-steps"><div class="ph-step" data-n="1">Describe your decision</div><div class="ph-step" data-n="2">Pick a framework</div><div class="ph-step" data-n="3">Hit Roll the Dice</div></div></div>`;
+  document.getElementById('resultFooter').style.display='none';
+  currentResultHTML=''; currentResultText='';
+}
+
+// ─── COPY ─────────────────────────────────────────────────────
+function copyResult() {
+  const t = currentResultText || document.getElementById('resultBody').innerText;
+  navigator.clipboard.writeText(t).then(()=>toast('Analysis copied!','success')).catch(()=>toast('Copy failed — try selecting manually.','error'));
+}
+
+// ─── PDF EXPORT ──────────────────────────────────────────────
+// ─── PURE JS PDF BUILDER (zero external deps) ────────────────
+// Builds a real PDF file from scratch using raw PDF syntax.
+// Supports multiline text, page breaks, bold/normal weight, colors.
+
+function downloadPDF(htmlContent, decision, context, fw) {
+  // ── 1. Extract clean text lines from the result ──
+  const container = document.createElement('div');
+  container.innerHTML = htmlContent || currentResultHTML || '';
+
+  // Build structured line list from DOM
+  const lines = [];
+  const fwLabel = fw || FW_NAMES[selectedFW];
+  const dateStr = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  lines.push({ type:'header', text:'DecisionDice', sub: dateStr });
+  lines.push({ type:'decision', text: decision||'', ctx: context||'' });
+  lines.push({ type:'fwbadge', text: fwLabel });
+  lines.push({ type:'gap' });
+
+  // Walk visible DOM nodes intelligently
+  function walk(node) {
+    if (node.nodeType === Node.TEXT_NODE) return;
+    const cls = node.className || '';
+    const tag = (node.tagName||'').toLowerCase();
+
+    if (cls.includes('res-section-title') || tag==='h3') {
+      lines.push({ type:'section', text: node.textContent.trim() });
+    } else if (cls.includes('verdict-box') || cls.includes('ai-verdict')) {
+      lines.push({ type:'verdict', text: node.textContent.replace(/🎯\s*Verdict/i,'').trim() });
+    } else if (cls.includes('pc-col')) {
+      const colTitle = node.querySelector('.pc-col-title')?.textContent.trim()||'';
+      lines.push({ type:'colheader', text: colTitle });
+      node.querySelectorAll('li').forEach(li => {
+        const t = li.textContent.replace(/[●•]/g,'').trim();
+        if(t) lines.push({ type:'bullet', text: t });
+      });
+    } else if (cls.includes('tl-card')) {
+      const period = node.querySelector('.tl-period')?.textContent.trim()||'';
+      const content = node.querySelector('.tl-content')?.textContent.trim()||'';
+      if(period) lines.push({ type:'sublabel', text: period });
+      if(content) lines.push({ type:'body', text: content });
+      lines.push({ type:'smallgap' });
+    } else if (cls.includes('da-challenge') || cls.includes('da-assumption')) {
+      const t = node.textContent.trim();
+      if(t && !t.includes('Not filled')) lines.push({ type:'bullet', text: t });
+    } else if (cls.includes('balance-bar-wrap')) {
+      const lean = node.querySelector('.bal-lean')?.textContent.trim()||'';
+      const score = node.querySelector('.bal-score')?.textContent.trim()||'';
+      if(lean) lines.push({ type:'sublabel', text: lean + (score ? '  ·  ' + score : '') });
+    } else if (cls.includes('score-tbl')) {
+      // table — walk rows
+      node.querySelectorAll('tr').forEach((row,ri) => {
+        const cells = [...row.querySelectorAll('th,td')].map(c => c.textContent.replace(/[0-9]+\s*$/,'').trim()).filter(Boolean);
+        if(cells.length) lines.push({ type: ri===0?'sublabel':'body', text: cells.join('  |  ') });
+      });
+    } else if (tag==='p' || tag==='li') {
+      const t = node.textContent.replace(/[●•]/g,'•').trim();
+      if(t) lines.push({ type: tag==='li'?'bullet':'body', text: t });
+    } else if (tag==='h3') {
+      lines.push({ type:'section', text: node.textContent.trim() });
+    } else {
+      node.childNodes.forEach(walk);
+    }
+  }
+  container.childNodes.forEach(walk);
+
+  // ── 2. PDF building primitives ──
+  // A4: 595 x 842 pt (72pt = 1 inch). 1mm ≈ 2.835pt
+  const PW=595, PH=842, ML=50, MR=50, MT=50, MB=50;
+  const CW = PW - ML - MR;
+
+  // Font metrics (Helvetica proportional widths, approximate)
+  const WIDTHS_NORMAL = {
+    ' ':0.278,'!':0.278,'"':0.355,'#':0.556,'$':0.556,'%':0.889,'&':0.667,"'":0.191,
+    '(':0.333,')':0.333,'*':0.389,'+':0.584,',':0.278,'-':0.333,'.':0.278,'/':0.278,
+    '0':0.556,'1':0.556,'2':0.556,'3':0.556,'4':0.556,'5':0.556,'6':0.556,'7':0.556,
+    '8':0.556,'9':0.556,':':0.278,';':0.278,'<':0.584,'=':0.584,'>':0.584,'?':0.556,
+    '@':1.015,'A':0.667,'B':0.667,'C':0.722,'D':0.722,'E':0.667,'F':0.611,'G':0.778,
+    'H':0.722,'I':0.278,'J':0.500,'K':0.667,'L':0.611,'M':0.833,'N':0.722,'O':0.778,
+    'P':0.667,'Q':0.778,'R':0.722,'S':0.667,'T':0.611,'U':0.722,'V':0.667,'W':0.944,
+    'X':0.667,'Y':0.667,'Z':0.611,'[':0.278,'\\':0.278,']':0.278,'^':0.469,'_':0.556,
+    'a':0.556,'b':0.556,'c':0.500,'d':0.556,'e':0.556,'f':0.278,'g':0.556,'h':0.556,
+    'i':0.222,'j':0.222,'k':0.500,'l':0.222,'m':0.833,'n':0.556,'o':0.556,'p':0.556,
+    'q':0.556,'r':0.333,'s':0.500,'t':0.278,'u':0.556,'v':0.500,'w':0.722,'x':0.500,
+    'y':0.500,'z':0.500,'{':0.334,'|':0.260,'}':0.334,'~':0.584
+  };
+
+  function charW(ch, bold, size) {
+    const base = WIDTHS_NORMAL[ch] || 0.556;
+    return base * (bold ? 1.05 : 1.0) * size;
+  }
+
+  function measureStr(str, bold, size) {
+    return [...str].reduce((s,c)=>s+charW(c,bold,size), 0);
+  }
+
+  function wrapText(text, bold, size, maxW) {
+    const words = text.split(' ');
+    const result = [];
+    let line = '';
+    for (const word of words) {
+      const test = line ? line+' '+word : word;
+      if (measureStr(test, bold, size) > maxW && line) {
+        result.push(line);
+        line = word;
+      } else { line = test; }
+    }
+    if (line) result.push(line);
+    return result.length ? result : [''];
+  }
+
+  // ── 3. Encode text as PDF literal string ──
+  function pdfStr(s) {
+    // Strip non-latin chars (emojis etc become spaces), escape PDF specials
+    let out = '';
+    for (const ch of s) {
+      const code = ch.codePointAt(0);
+      if (code > 255) { out += ' '; continue; }
+      if (ch==='(' || ch===')' || ch==='\\') out += '\\'+ch;
+      else out += ch;
+    }
+    return '(' + out + ')';
+  }
+
+  // ── 4. Page stream builder ──
+  const pages = []; // each page: array of stream ops
+  let page = [];
+  let y = PH - MT; // top of content
+  let inTextBlock = false;
+
+  function endText() { if(inTextBlock){page.push('ET'); inTextBlock=false;} }
+  function beginText() { if(!inTextBlock){page.push('BT'); inTextBlock=true;} }
+
+  function newPage() {
+    endText();
+    // Footer for current page
+    page.push('BT');
+    page.push(`/F1 8 Tf`);
+    page.push(`0.608 0.584 0.561 rg`);
+    page.push(`${ML} ${MB-18} Td`);
+    page.push(`${pdfStr('DecisionDice  -  Make smarter choices')} Tj`);
+    page.push(`${CW - 60} 0 Td`);
+    page.push(`${pdfStr('decisondice.app')} Tj`);
+    page.push('ET');
+    pages.push([...page]);
+    page = [];
+    y = PH - MT;
+  }
+
+  function checkY(needed) { if (y - needed < MB + 20) newPage(); }
+
+  function drawRect(x, ry, w, h, r, g, b, fill=true) {
+    endText();
+    page.push(`${(r/255).toFixed(3)} ${(g/255).toFixed(3)} ${(b/255).toFixed(3)} ${fill?'rg':'RG'}`);
+    page.push(`${x} ${ry} ${w} ${h} re ${fill?'f':'S'}`);
+  }
+
+  function drawLine(x1,y1,x2,y2,r,g,b,lw=0.5) {
+    endText();
+    page.push(`${lw} w`);
+    page.push(`${(r/255).toFixed(3)} ${(g/255).toFixed(3)} ${(b/255).toFixed(3)} RG`);
+    page.push(`${x1} ${y1} m ${x2} ${y2} l S`);
+  }
+
+  function textLine(text, x, ty, font, size, r, g, b) {
+    beginText();
+    page.push(`/${font} ${size} Tf`);
+    page.push(`${(r/255).toFixed(3)} ${(g/255).toFixed(3)} ${(b/255).toFixed(3)} rg`);
+    page.push(`${x} ${ty} Td`);
+    page.push(`${pdfStr(text)} Tj`);
+    endText();
+  }
+
+  function addWrappedText(text, x, startY, font, size, r, g, b, lineH, maxW) {
+    const bold = font==='F2';
+    const wrapped = wrapText(text, bold, size, maxW);
+    let cy = startY;
+    wrapped.forEach(line => {
+      textLine(line, x, cy, font, size, r, g, b);
+      cy -= lineH;
+    });
+    return cy; // returns y after last line
+  }
+
+  // ── 5. Render page 1 header ──
+  // Dark header bar
+  drawRect(0, PH-55, PW, 55, 26, 24, 20, true);
+  textLine('DecisionDice', ML, PH-33, 'F2', 18, 200, 135, 58);
+  textLine(dateStr, PW-MR-measureStr(dateStr,false,9)-2, PH-33, 'F1', 9, 160, 155, 148);
+  textLine('Smart Decision Making Tool', ML, PH-47, 'F1', 8, 130, 125, 118);
+  y = PH - 75;
+
+  // Decision box
+  const decLines = wrapText(decision||'', true, 12, CW-16);
+  const ctxLines = context ? wrapText(context, false, 9, CW-16) : [];
+  const boxH = 16 + (decLines.length * 16) + (ctxLines.length * 12) + 8;
+  checkY(boxH + 20);
+  drawRect(ML, y - boxH, CW, boxH, 247, 244, 239, true);
+  textLine('YOUR DECISION', ML+8, y-12, 'F2', 7, 107, 101, 96);
+  let ty2 = y - 26;
+  decLines.forEach(l => { textLine(l, ML+8, ty2, 'F2', 12, 26, 24, 20); ty2 -= 16; });
+  if (context) { ty2 -= 2; ctxLines.forEach(l => { textLine(l, ML+8, ty2, 'F1', 9, 107, 101, 96); ty2 -= 12; }); }
+  y -= boxH + 10;
+
+  // Framework badge
+  checkY(18);
+  const badgeTxt = 'FRAMEWORK: ' + fwLabel.toUpperCase();
+  const badgeW2 = measureStr(badgeTxt, true, 8) + 16;
+  drawRect(ML, y-12, badgeW2, 16, 240, 220, 195, true);
+  textLine(badgeTxt, ML+8, y-7, 'F2', 8, 166, 88, 24);
+  y -= 26;
+
+  // ── 6. Render content lines ──
+  for (const line of lines) {
+    if (line.type==='header'||line.type==='decision'||line.type==='fwbadge'||line.type==='gap') continue;
+
+    if (line.type==='section') {
+      checkY(28);
+      y -= 8;
+      drawLine(ML, y+2, PW-MR, y+2, 221, 217, 210, 0.5);
+      y -= 4;
+      textLine(line.text.replace(/[^\x20-\x7E]/g,' ').trim(), ML, y, 'F2', 12, 26, 24, 20);
+      y -= 18;
+
+    } else if (line.type==='verdict') {
+      const vLines = wrapText(line.text.replace(/[^\x20-\x7E]/g,' '), false, 11, CW-20);
+      const vH = 20 + vLines.length * 15 + 8;
+      checkY(vH);
+      y -= 6;
+      drawRect(ML, y-vH, CW, vH, 26, 24, 20, true);
+      textLine('VERDICT', ML+10, y-12, 'F2', 7, 200, 135, 58);
+      let vy = y-24;
+      vLines.forEach(l => { textLine(l, ML+10, vy, 'F1', 11, 230, 225, 218); vy -= 15; });
+      y -= vH + 10;
+
+    } else if (line.type==='colheader') {
+      checkY(18);
+      textLine(line.text.replace(/[^\x20-\x7E]/g,' '), ML, y, 'F2', 10, 26, 24, 20);
+      y -= 16;
+
+    } else if (line.type==='sublabel') {
+      checkY(16);
+      textLine(line.text.replace(/[^\x20-\x7E]/g,' '), ML, y, 'F2', 9, 107, 101, 96);
+      y -= 14;
+
+    } else if (line.type==='bullet') {
+      const bLines = wrapText('• ' + line.text.replace(/[^\x20-\x7E]/g,' '), false, 10, CW-10);
+      checkY(bLines.length * 14 + 2);
+      bLines.forEach((l,i) => {
+        textLine(i===0?l:'  '+l.replace(/^•\s*/,''), ML+4, y, 'F1', 10, 55, 52, 48);
+        y -= 14;
+      });
+
+    } else if (line.type==='body') {
+      const bLines = wrapText(line.text.replace(/[^\x20-\x7E]/g,' '), false, 10, CW);
+      checkY(bLines.length * 14 + 2);
+      bLines.forEach(l => { textLine(l, ML, y, 'F1', 10, 55, 52, 48); y -= 14; });
+
+    } else if (line.type==='smallgap') {
+      y -= 6;
+    }
+  }
+
+  newPage(); // push final page
+
+  // ── 7. Assemble raw PDF ──
+  const streamBuffers = pages.map(ops => ops.join('\n'));
+  const offsets = [];
+  let pdf = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';
+
+  // Object helpers
+  const objs = {};
+  let nextObj = 1;
+  function addObj(content) {
+    const id = nextObj++;
+    objs[id] = content;
+    return id;
+  }
+
+  // Fonts
+  const f1id = addObj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  const f2id = addObj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+
+  // Pages dict placeholder
+  const pagesId = nextObj++;
+
+  // Page objects + content streams
+  const pageIds = streamBuffers.map((stream, idx) => {
+    const encoded = stream;
+    const streamLen = encoded.length;
+    const streamId = addObj(`<< /Length ${streamLen} >>\nstream\n${encoded}\nendstream`);
+    const pageId = addObj(
+      `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${PW} ${PH}] ` +
+      `/Resources << /Font << /F1 ${f1id} 0 R /F2 ${f2id} 0 R >> >> ` +
+      `/Contents ${streamId} 0 R >>`
+    );
+    return pageId;
+  });
+
+  // Pages dict
+  objs[pagesId] = `<< /Type /Pages /Kids [${pageIds.map(id=>`${id} 0 R`).join(' ')}] /Count ${pageIds.length} >>`;
+
+  // Catalog
+  const catalogId = addObj(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
+
+  // Info
+  const infoId = addObj(`<< /Title (DecisionDice Analysis) /Creator (DecisionDice) >>`);
+
+  // Write objects
+  const xrefOffsets = {};
+  for (let id = 1; id < nextObj; id++) {
+    xrefOffsets[id] = pdf.length;
+    pdf += `${id} 0 obj\n${objs[id]}\nendobj\n`;
+  }
+
+  // xref
+  const xrefPos = pdf.length;
+  pdf += `xref\n0 ${nextObj}\n0000000000 65535 f \n`;
+  for (let id = 1; id < nextObj; id++) {
+    pdf += xrefOffsets[id].toString().padStart(10,'0') + ' 00000 n \n';
+  }
+  pdf += `trailer\n<< /Size ${nextObj} /Root ${catalogId} 0 R /Info ${infoId} 0 R >>\n`;
+  pdf += `startxref\n${xrefPos}\n%%EOF`;
+
+  // ── 8. Download ──
+  const bytes = new Uint8Array(pdf.length);
+  for (let i=0; i<pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 0xff;
+  const blob = new Blob([bytes], {type:'application/pdf'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const safeName = (decision||'analysis').substring(0,40).replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  a.download = `DecisionDice_${safeName}.pdf`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  toast('PDF downloaded!','success');
+}
+
+// ─── SAVE TO HISTORY ─────────────────────────────────────────
+function saveToHistory() {
+  if (!currentResultHTML) return;
+  const history = getHistory();
+  const entry = {
+    id: Date.now().toString(),
+    decision: currentDecision,
+    context: currentContext,
+    framework: selectedFW,
+    mode: useAI ? 'ai' : 'manual',
+    resultHTML: currentResultHTML,
+    resultText: currentResultText || document.getElementById('resultBody').innerText,
+    date: new Date().toISOString()
+  };
+  history.unshift(entry);
+  if (history.length > 50) history.pop();
+  localStorage.setItem('dd_history', JSON.stringify(history));
+  updateHistCount();
+  toast('Saved to History!','success');
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('dd_history')||'[]'); } catch { return []; }
+}
+
+function updateHistCount() {
+  const n = getHistory().length;
+  document.getElementById('navHistCount').textContent = n;
+}
+
+// ─── RENDER HISTORY ───────────────────────────────────────────
+let histFilter = 'all';
+function filterHistory(btn) {
+  document.querySelectorAll('.hist-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  histFilter = btn.dataset.filter;
+  renderHistoryGrid();
+}
+
+function renderHistoryGrid() {
+  const grid = document.getElementById('historyGrid');
+  let history = getHistory();
+  if (histFilter !== 'all') history = history.filter(h=>h.framework===histFilter);
+
+  if (!history.length) {
+    grid.innerHTML = `<div class="hist-empty">
+      <div class="hist-empty-icon">📋</div>
+      <h3>${histFilter==='all' ? 'No decisions saved yet.' : 'No decisions with this framework.'}</h3>
+      <p>${histFilter==='all' ? 'Make a decision and click "Save to History" — it\'ll appear here.' : 'Try a different filter or make a new decision.'}</p>
+      <button class="btn-primary" style="margin-top:16px" onclick="showPage('home');setTimeout(()=>document.getElementById('tool').scrollIntoView({behavior:'smooth'}),100)">Make a Decision →</button>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = `<div class="hist-grid">${history.map(entry=>{
+    const date = new Date(entry.date);
+    const dateStr = date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const timeStr = date.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const preview = entry.resultText ? entry.resultText.substring(0,200).replace(/\n/g,' ') : 'No preview available';
+    return `<div class="hist-card" onclick="openHistModal('${entry.id}')">
+      <div class="hist-card-top">
+        <div class="hist-card-badges">
+          <span class="hist-fw-badge">${FW_NAMES[entry.framework]||entry.framework}</span>
+          <span class="hist-mode-badge ${entry.mode}">${entry.mode==='ai'?'✨ AI':'📝 Manual'}</span>
+        </div>
+        <div class="hist-card-menu" onclick="event.stopPropagation()">
+          <button class="hist-card-dots" onclick="toggleHistDD('${entry.id}',event)">⋯</button>
+          <div class="hist-dropdown" id="hdd-${entry.id}">
+            <button class="hist-dd-item" onclick="downloadHistPDF('${entry.id}')">⬇ Download PDF</button>
+            <button class="hist-dd-item" onclick="copyHistEntry('${entry.id}')">📋 Copy Analysis</button>
+            <button class="hist-dd-item danger" onclick="deleteEntry('${entry.id}',event)">🗑 Delete</button>
+          </div>
+        </div>
+      </div>
+      <div class="hist-card-decision">${esc(entry.decision)}</div>
+      ${entry.context?`<div class="hist-card-context">${esc(entry.context)}</div>`:''}
+      <div class="hist-card-verdict">${esc(preview)}…</div>
+      <div class="hist-card-footer">
+        <span class="hist-card-date">${dateStr} · ${timeStr}</span>
+        <button class="hist-card-view" onclick="event.stopPropagation();openHistModal('${entry.id}')">View →</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function toggleHistDD(id, event) {
+  event.stopPropagation();
+  document.querySelectorAll('.hist-dropdown').forEach(d=>{ if(d.id!=='hdd-'+id) d.classList.remove('open'); });
+  document.getElementById('hdd-'+id)?.classList.toggle('open');
+}
+document.addEventListener('click', ()=>document.querySelectorAll('.hist-dropdown').forEach(d=>d.classList.remove('open')));
+
+function openHistModal(id) {
+  const entry = getHistory().find(h=>h.id===id);
+  if (!entry) return;
+  currentOpenHistId = id;
+  document.getElementById('modalDecision').textContent = entry.decision;
+  document.getElementById('modalContext').textContent = entry.context || '';
+  document.getElementById('modalBadges').innerHTML = `<span class="hist-fw-badge">${FW_NAMES[entry.framework]||entry.framework}</span><span class="hist-mode-badge ${entry.mode}">${entry.mode==='ai'?'✨ AI':'📝 Manual'}</span>`;
+  document.getElementById('modalBody').innerHTML = entry.resultHTML || `<pre style="white-space:pre-wrap;font-size:13px;line-height:1.65;font-family:'Karla',sans-serif">${esc(entry.resultText||'')}</pre>`;
+  document.getElementById('histModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  // Animate bars
+  setTimeout(()=>document.querySelectorAll('#modalBody .bar-fill[data-w]').forEach(el=>{el.style.width=el.dataset.w+'%'}),150);
+}
+
+function closeHistModal(event) {
+  if (event && event.target !== document.getElementById('histModal')) return;
+  document.getElementById('histModal').classList.remove('open');
+  document.body.style.overflow='';
+  currentOpenHistId = null;
+}
+
+function copyModalResult() {
+  const entry = getHistory().find(h=>h.id===currentOpenHistId);
+  if (!entry) return;
+  const text = entry.resultText || document.getElementById('modalBody').innerText;
+  navigator.clipboard.writeText(text).then(()=>toast('Copied!','success'));
+}
+
+function downloadModalPDF() {
+  const entry = getHistory().find(h=>h.id===currentOpenHistId);
+  if (!entry) return;
+  const prevFW = selectedFW;
+  selectedFW = entry.framework;
+  downloadPDF(entry.resultHTML, entry.decision, entry.context, FW_NAMES[entry.framework]);
+  selectedFW = prevFW;
+}
+
+function downloadHistPDF(id) {
+  const entry = getHistory().find(h=>h.id===id);
+  if (!entry) return;
+  const prevFW = selectedFW; selectedFW = entry.framework;
+  downloadPDF(entry.resultHTML, entry.decision, entry.context, FW_NAMES[entry.framework]);
+  selectedFW = prevFW;
+}
+
+function copyHistEntry(id) {
+  const entry = getHistory().find(h=>h.id===id);
+  if (!entry) return;
+  navigator.clipboard.writeText(entry.resultText||entry.decision).then(()=>toast('Copied!','success'));
+}
+
+function deleteEntry(id, event) {
+  event?.stopPropagation();
+  if (!confirm('Delete this decision from history?')) return;
+  const history = getHistory().filter(h=>h.id!==id);
+  localStorage.setItem('dd_history', JSON.stringify(history));
+  updateHistCount(); renderHistoryGrid();
+  toast('Deleted.','info');
+}
+
+function deleteHistoryItem() {
+  if (!currentOpenHistId) return;
+  closeHistModal(null);
+  deleteEntry(currentOpenHistId);
+}
+
+function clearAllHistory() {
+  if (!confirm('Clear all saved decisions? This cannot be undone.')) return;
+  localStorage.removeItem('dd_history');
+  updateHistCount(); renderHistoryGrid();
+  toast('History cleared.','info');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────
+const ICONS = {success:'✓',error:'✕',info:'ℹ'};
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  const ic = document.getElementById('toastIcon');
+  const ms = document.getElementById('toastMsg');
+  ic.textContent = ICONS[type]||'';
+  ms.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), 2800);
+}
+
+// ─── UTILITY ─────────────────────────────────────────────────
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+renderManualInputs();
+updateHistCount();
+// Pre-render provider fields so they're ready when AI is toggled on
+renderProviderFields();
+
+// Hero card hover animation
+document.querySelectorAll('.fw-preview-card').forEach((card,i)=>{
+  card.addEventListener('mouseenter',()=>{
+    document.querySelectorAll('.fw-preview-card').forEach(c=>c.classList.remove('active'));
+    card.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
